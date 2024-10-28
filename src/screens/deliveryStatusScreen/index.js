@@ -12,6 +12,7 @@ import { setUserTrackingKey } from '../../redux/actions/UserAction';
 export const DeliveryStatusScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
+  console.log("route: ",route?.params)
   const dispatch = useDispatch();
   const { userKey } = useSelector(state => state.auth.userDetails);
 
@@ -24,8 +25,10 @@ export const DeliveryStatusScreen = () => {
     try {
       const response = await loadShipmentList(statusCard, userKey);
       if (response.status === 1) {
+        console.log("response in loadShipmentList: ",response)
         setShipmentDetails(response);
-        dispatch(setUserTrackingKey(response?.driverDeliveryAllocatedShipments?.[0]?.shipment?.shipmentTrackingKey))
+        const trackingKey = response?.driverDeliveryAllocatedShipments?.[0]?.shipment?.shipmentTrackingKey;
+        dispatch(setUserTrackingKey(trackingKey))
       } else {
         console.log('response in shipment when status -1: ', response);
       }
@@ -45,13 +48,13 @@ export const DeliveryStatusScreen = () => {
     return `${day}-${month}-${year}`;
   };
 
-  const handleShipmentCardPress = (shipmentStatusCode, userKey) => {
+  const handleShipmentCardPress = (trackingKey, userKey) => {
+    console.log("trackingKey: ",trackingKey)
     if (!shipmentStatusCode || !userKey) {
       console.log('Missing status code or user key');
       return;
     }
-    console.log('Pressed card with:', shipmentStatusCode, userKey);
-    navigation.navigate('shipmentDetailsScreen', { shipmentStatusCode, userKey });
+    navigation.navigate('shipmentDetailsScreen', { trackingKey, userKey });
   };
 
   useEffect(() => {
@@ -81,7 +84,7 @@ export const DeliveryStatusScreen = () => {
             style={{ borderRadius: size.moderateScale(10) }}
             activeOpacity={0.7}
             underlayColor={color.customBlack(0.2)}
-            onPress={() => handleShipmentCardPress(shipmentStatusCode, userKey)}
+            onPress={() => handleShipmentCardPress(shipment?.shipmentTrackingKey, userKey)}
           >
             <View style={styles.card()}>
               <View style={styles.iconView()}>

@@ -1,7 +1,7 @@
 import { color, fonts, fontSize, size } from "../../theme"
 
 export const mainView = () => ({
-  flex: 1
+  flex: 1,
 })
 
 export const header = () => ({

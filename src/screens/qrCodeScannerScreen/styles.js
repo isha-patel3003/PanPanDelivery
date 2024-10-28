@@ -25,7 +25,6 @@ export const middleView = () => ({
 })
 
 export const riderDetails = () => ({
-  paddingVertical: size.moderateScale(10),
   position: 'absolute',
   top: size.moderateScale(0),
   zIndex: size.moderateScale(2),
@@ -34,7 +33,7 @@ export const riderDetails = () => ({
 })
 
 export const riderName = () => ({
-  fontSize: fontSize.middleSmallMedium,
+  fontSize: fontSize.littleMedium,
   fontFamily: fonts.sarabunBold,
   color: color.primary,
   textAlign: 'center',
@@ -42,7 +41,7 @@ export const riderName = () => ({
 })
 
 export const riderAddress = () => ({
-  fontSize: fontSize.littleMedium,
+  fontSize: fontSize.verySmall,
   fontFamily: fonts.sarabunRegular,
   color: color.primary,
   textAlign: 'center',
@@ -72,26 +71,34 @@ export const scannerButton = () => ({
 })
 
 export const bottomView = () => ({
-  paddingVertical:  size.moderateScale(30),
-  paddingHorizontal: size.moderateScale(20),
-  backgroundColor: color.primary,
+  backgroundColor: color.white,
   alignItems: 'center',
-  gap: size.moderateScale(10)
+  gap: size.moderateScale(10),
+  flexDirection: 'column-reverse'
 })
 
 export const row = () => ({
   flexDirection: 'row',
   justifyContent: 'space-between',
   width: '100%',
-  paddingHorizontal: size.moderateScale(10)
+  paddingVertical: size.moderateScale(10),
+  backgroundColor: color.primary,
+  paddingHorizontal: size.moderateScale(20),
 })
 
 export const linkButton = () => ({
 })
 
 export const linkText = () => ({
-  fontSize: fontSize.littleMedium,
+  fontSize: fontSize.small,
   fontFamily: fonts.sarabunBold,
   color: color.secondary,
   textDecorationLine: 'underline'
+})
+
+export const capturedImage = () => ({
+  width: '100%',
+  height: '100%',
+  objectFit: 'contain',
+  flex: 1,
 })

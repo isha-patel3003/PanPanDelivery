@@ -28,9 +28,9 @@ export const modalHeader = () => ({
 
 export const modalTitle = () => ({
   color: color.white,
-  fontSize: fontSize.middleMedium,
+  fontSize: fontSize.littleMedium,
   fontFamily: fonts.sarabunSemiBold,
-  textAlign: 'center'
+  textAlign: 'center',
 })
 
 export const modalContent = () => ({

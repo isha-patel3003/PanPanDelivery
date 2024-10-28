@@ -174,7 +174,7 @@ export const RouteScreen = () => {
           renderLeftIcon={() => (<IcBackArrow fill={color.secondary} />)}
           headerLeftIconPress={() => navigation.goBack()}
         />
-        <Screen loading={false} loadingBgColor={color.white}>
+        <Screen loading={false} loadingBgColor={color.white} scrollStyle={{ flexGrow: 1 }}>
           {
             locationPermission
               ? (

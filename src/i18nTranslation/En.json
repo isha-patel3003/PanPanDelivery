@@ -152,7 +152,7 @@
     "button_text_2": "Re-Scan",
     "button_text_3": "Trouble Scanning?",
     "dialog_title": "Pick Order",
-    "dialog_message": "Are you sure you want to picked the order?"
+    "dialog_message": "Are you sure you want to picked the order of "
   },
   "orders_screen": {
     "screen_title": "Orders",

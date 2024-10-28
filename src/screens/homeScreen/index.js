@@ -8,14 +8,13 @@ import { color, IcBarCode, IcLeftArrow, IcParcelBox, IcRightArrow, IcSearch, ima
 import { Screen, StatusCard, Switch } from '../../components'
 import * as styles from './styles'
 import { useDispatch, useSelector } from 'react-redux'
-import { loadDashboardMetrics, loadShipmentList } from '../../services'
-import { setShipmentCardDetails } from '../../redux/actions/UserAction'
+import { loadDashboardMetrics } from '../../services'
 
 export const HomeScreen = () => {
 
   const navigation = useNavigation();
   const { userDetails } = useSelector(state => state.auth);
-  const dispatch  = useDispatch();
+  console.log("userDetails: ", userDetails)
 
   const { t } = useContext(LocalizationContext);
   const { internetConnectivity } = useMainContext();
@@ -52,8 +51,8 @@ export const HomeScreen = () => {
     }
   }
 
-  const statusCardOnpress = async (statusCard) => {
-    navigation.navigate('deliveryStatusScreen', {statusCode: statusCard})
+  const statusCardOnpress = (statusCard) => {
+    navigation.navigate('deliveryStatusScreen', { statusCode: statusCard })
   }
 
   useEffect(() => {
@@ -146,19 +145,19 @@ export const HomeScreen = () => {
                     : (
                       <View style={styles.row()}>
                         <StatusCard
-                          onPress={() => statusCardOnpress(dashboardMetrics?.pending?.statusCode, userDetails?.userKey)}
+                          onPress={() => statusCardOnpress(dashboardMetrics?.pending?.statusCode)}
                           bgColor={dashboardMetrics?.pending?.colorCode}
                           title={dashboardMetrics?.pending?.shipmentCount}
                           bodyText={dashboardMetrics?.pending?.statusTextDriver}
                         />
                         <StatusCard
-                          onPress={() => statusCardOnpress(dashboardMetrics?.outForDelivery?.statusCode, userDetails?.userKey)}
+                          onPress={() => statusCardOnpress(dashboardMetrics?.outForDelivery?.statusCode)}
                           bgColor={dashboardMetrics?.outForDelivery?.colorCode}
                           title={dashboardMetrics?.outForDelivery?.shipmentCount}
                           bodyText={dashboardMetrics?.outForDelivery?.statusTextDriver}
                         />
                         <StatusCard
-                          onPress={() => statusCardOnpress(dashboardMetrics?.delivered?.statusCode, userDetails?.userKey)}
+                          onPress={() => statusCardOnpress(dashboardMetrics?.delivered?.statusCode)}
                           bgColor={dashboardMetrics?.delivered?.colorCode}
                           title={dashboardMetrics?.delivered?.shipmentCount}
                           bodyText={dashboardMetrics?.delivered?.statusTextDriver}
@@ -175,19 +174,19 @@ export const HomeScreen = () => {
                     : (
                       <View style={styles.row()}>
                         <StatusCard
-                          onPress={() => statusCardOnpress(dashboardMetrics?.pickupPending?.statusCode, userDetails?.userKey)}
+                          onPress={() => statusCardOnpress(dashboardMetrics?.pickupPending?.statusCode)}
                           bgColor={dashboardMetrics?.pickupPending?.colorCode}
                           title={dashboardMetrics?.pickupPending?.shipmentCount}
                           bodyText={dashboardMetrics?.pickupPending?.statusTextDriver}
                         />
                         <StatusCard
-                          onPress={() => statusCardOnpress(dashboardMetrics?.picked?.statusCode, userDetails?.userKey)}
+                          onPress={() => statusCardOnpress(dashboardMetrics?.picked?.statusCode)}
                           bgColor={dashboardMetrics?.picked?.colorCode}
                           title={dashboardMetrics?.picked?.shipmentCount}
                           bodyText={dashboardMetrics?.picked?.statusTextDriver}
                         />
                         <StatusCard
-                          onPress={() => statusCardOnpress(dashboardMetrics?.dropped?.statusCode, userDetails?.userKey)}
+                          onPress={() => statusCardOnpress(dashboardMetrics?.dropped?.statusCode)}
                           bgColor={dashboardMetrics?.dropped?.colorCode}
                           title={dashboardMetrics?.dropped?.shipmentCount}
                           bodyText={dashboardMetrics?.dropped?.statusTextDriver}

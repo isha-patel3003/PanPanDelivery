@@ -15,10 +15,6 @@ export const headerTitle = () => ({
   fontSize: fontSize.middleSmallMedium,
 })
 
-export const middleView = () => ({
-  flex: 1,
-})
-
 export const mapView = () => ({
   flex: 1,
 })

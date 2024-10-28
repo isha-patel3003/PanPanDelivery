@@ -67,6 +67,7 @@ export const OTPScreen = () => {
       const response = await userLogin(phoneNumber, otp.toString());
       console.log("response when status is not -1 in handleOTPNavigation", response);
       if (response.status !== -1) {
+        Keyboard.dismiss()
         Toast.show({
           type: 'success',
           text1: 'Success',

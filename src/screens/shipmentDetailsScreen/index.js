@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 
 import { color, IcBackArrow, IcHome, IcParcelBox, IcPerson, IcRoute, size } from '../../theme'
 import { LocalizationContext } from '../../context'
-import { loadShipmentList } from '../../services'
+import { loadShipmentDetailsFromBarcode } from '../../services'
 import { Header, Screen, Button, DialogBox } from '../../components'
 import * as styles from './styles'
 
@@ -13,18 +13,18 @@ export const ShipmentDetailsScreen = () => {
 
   const navigation = useNavigation();
   const route = useRoute();
+  console.log("route: ",route?.params)
   const { userKey } = useSelector(state => state.auth.userDetails)
   const { t } = useContext(LocalizationContext);
 
   const [showDialogBox, setShowDialogBox] = useState(false);
-  const [shipmentStatusCode, setShipmentStatusCode] = useState(route?.params?.shipmentStatusCode);
   const [loading, setLoading] = useState(false);
   const [shipmentDetails, setShipmentDetails] = useState({})
 
   const fetchStatusCardDetails = async (statusCard, userKey) => {
     setLoading(true);
     try {
-      const response = await loadShipmentList(statusCard, userKey);
+      const response = await loadShipmentDetailsFromBarcode(statusCard, userKey);
       if (response.status === 1) {
         console.log('response in shipment: ', response);
         setShipmentDetails(response);
@@ -48,14 +48,12 @@ export const ShipmentDetailsScreen = () => {
   };
 
   useEffect(() => {
-    console.log("route?.prams: ", route?.params?.shipmentStatusCode)
-    if (route?.params?.shipmentStatusCode) {
-      setShipmentStatusCode(route?.params?.shipmentStatusCode);
-      fetchStatusCardDetails(route.params.shipmentStatusCode, userKey);
+    if (route?.params?.trackingKey) {
+      fetchStatusCardDetails(route.params.trackingKey, userKey);
     }
   }, [route, userKey]);
 
-  const shipment = shipmentDetails?.driverDeliveryAllocatedShipments?.[0]?.shipment || {};
+  const shipment = shipmentDetails?.driverAllocatedShipment?.shipment || {};
   const shippingDetails = shipment?.shippingDetails || {};
 
   return (

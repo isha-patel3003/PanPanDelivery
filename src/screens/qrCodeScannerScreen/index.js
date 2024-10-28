@@ -1,25 +1,31 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { View, Text, TouchableOpacity, PermissionsAndroid, Platform } from 'react-native';
-import { Camera, useCameraDevice } from 'react-native-vision-camera';
-import { BarcodeScanner } from '@react-native-ml-kit/barcode-scanning';
-import { useNavigation } from '@react-navigation/native'
+import React, { useContext, useEffect, useRef, useState } from 'react'
+import { Image, PermissionsAndroid, Text, TouchableOpacity, View } from "react-native"
+import { Camera, useCameraDevice, useCodeScanner } from 'react-native-vision-camera'
+import { useNavigation } from '@react-navigation/native';
 
 import { LocalizationContext } from '../../context';
-import { Button, DialogBox, Header, Screen } from '../../components'
-import { color, IcBackArrow, IcScanner, size } from '../../theme'
+import { color, IcBackArrow, IcScanner, size } from '../../theme';
+import { DialogBox, Header, Screen } from '../../components';
 import * as styles from './styles'
+import { loadShipmentDetailsFromBarcode } from '../../services';
+import { useSelector } from 'react-redux';
+
+
 
 export const QRCodeScannerScreen = () => {
 
   const navigation = useNavigation();
   const { t } = useContext(LocalizationContext);
+  const { userDetails } = useSelector(state => state.auth);
+
   const device = useCameraDevice('back');
 
+  const cameraRef = useRef(null);
+  const [loading, setLoading] = useState(false)
   const [cameraPermission, setCameraPermission] = useState(null);
   const [isCameraVisible, setIsCameraVisible] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
   const [scannedData, setScannedData] = useState(null);
-  const [showDialog, setShowDialog] = useState(false)
-
 
   const requestCameraPermission = async () => {
     if (Platform.OS === 'android') {
@@ -62,22 +68,38 @@ export const QRCodeScannerScreen = () => {
     }
   }
 
-  // const codeScanner = useCodeScanner({
-  //   codeTypes: ['ean-8', 'ean-13'],
-  //   onCodeScanned: (codes) => {
-  //     console.log(`Scanned ${codes}!`);
-  //     if (codes.length > 0) {
-  //       const code = codes[0];
-  //       setScannedData(code);
-  //     }
-  //   }
-  // })
+  const fetchShipmentDetailsFromBarcode = async (barcode, userKey) => {
+    setLoading(true)
+    try {
+      const response = await loadShipmentDetailsFromBarcode(barcode, userKey);
+      console.log(`response for ${barcode}: `,response);
+      if(response.status == 1) {
+        navigation.navigate('shipmentDetailsScreen', {trackingKey:  barcode, userKey});
+        setShowDialog(false);
+      }
+    } catch (error) {
+      console.log("Error fetching Shipment details from barcode::", error)
+    }
+  }
 
-  const handleBarcodeDetected = (barcode) => {
-    runOnUI(() => {
-      setBarcodeData(barcode.displayValue);
-    })();
-  };
+
+  const handleBarCodeScan = async () => {
+    setLoading(true)
+    setShowDialog(false)
+    await fetchShipmentDetailsFromBarcode(scannedData, userDetails.userKey)
+    setLoading(false)
+  }
+
+  const codeScanner = useCodeScanner({
+    codeTypes: ['qr', 'ean-13', 'code-128'],
+    onCodeScanned: async (codes) => {
+      codes.map(async (code) => {
+        console.log("code::::::: ", code.value);
+        setScannedData(code.value);
+        setShowDialog(true)
+      })
+    }
+  })
 
   const checkCameraPermission = async () => {
     const status = await Camera.getCameraPermissionStatus();
@@ -85,16 +107,13 @@ export const QRCodeScannerScreen = () => {
     setIsCameraVisible(status === 'granted');
   };
 
-  const handleReScan = () => {
-    setScannedData(null)
-  }
-
   useEffect(() => {
-    checkCameraPermission();
+    checkCameraPermission()
   }, [])
 
+
   return (
-    <Screen>
+    <Screen loading={loading} loadingBgColor={color.white}>
       <View style={styles.mainView()}>
         <Header
           title={t("qrCode_scanner_screen.screen_title")}
@@ -114,11 +133,11 @@ export const QRCodeScannerScreen = () => {
               isCameraVisible && device !== null && cameraPermission ?
                 (
                   <Camera
+                    ref={cameraRef}
                     style={{ flex: 1, flexGrow: 1, width: '100%' }}
                     device={device}
                     isActive={isCameraVisible}
-                    onFrameProcessor={BarcodeScanner.onFrameProcessor(handleBarcodeDetected)}
-                    frameProcessorFps={5}
+                    codeScanner={codeScanner}
                   />
                 )
                 : (
@@ -129,25 +148,30 @@ export const QRCodeScannerScreen = () => {
             }
           </View>
         </View>
-        <View style={styles.bottomView()}>
-          <View style={styles.row()}>
-            <TouchableOpacity style={styles.linkButton()} onPress={handleReScan}>
-              <Text style={styles.linkText()}>{t("qrCode_scanner_screen.button_text_2")}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.linkButton()} onPress={handleReScan}>
-              <Text style={styles.linkText()}>{t("qrCode_scanner_screen.button_text_3")}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        {/* {
+          scannedData && (
+            <View style={styles.bottomView()}>
+              <View style={styles.row()}>
+                <TouchableOpacity style={styles.linkButton()} onPress={handleReScan}>
+                  <Text style={styles.linkText()}>{t("qrCode_scanner_screen.button_text_2")}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.linkButton()} onPress={handleReScan}>
+                  <Text style={styles.linkText()}>{t("qrCode_scanner_screen.button_text_3")}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )
+        } */}
       </View>
       <DialogBox
         visible={showDialog}
         animationType='fade'
         title={t("qrCode_scanner_screen.dialog_title")}
-        message={t("qrCode_scanner_screen.dialog_message")}
-        onYesPress={() => setShowDialog(false)}
+        message={t("qrCode_scanner_screen.dialog_message") + " " + scannedData}
+        onYesPress={handleBarCodeScan}
         onNoPress={() => setShowDialog(false)}
       />
     </Screen>
   )
 }
+

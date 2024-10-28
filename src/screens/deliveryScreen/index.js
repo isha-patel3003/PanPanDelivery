@@ -158,7 +158,7 @@ export const DeliveryScreen = () => {
   }, [])
 
   return (
-    <Screen loading={loading} loadingBgColor={color.white}>
+    <Screen loading={loading} loadingBgColor={color.white} scrollStyle={{ flexGrow: 1}}>
       <StatusBar translucent={true} backgroundColor={color.transparent} barStyle='dark-content' />
       {
         locationPermission ? (

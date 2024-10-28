@@ -15,8 +15,10 @@ export const setShipmentCardDetails = async (statusCodeDetils) => {
 }
 
 export const setUserTrackingKey = async (key) => {
-  return {
-    type: actions.TRACKING_KEY,
-    payload: key
+  return (dispatch) => {
+    dispatch({
+      type: actions.TRACKING_KEY,
+      payload: key
+    })
   }
 }
