@@ -13,11 +13,10 @@ export const ShipmentDetailsScreen = () => {
 
   const navigation = useNavigation();
   const route = useRoute();
-  console.log("route: ",route?.params)
+  console.log("route: ", route?.params)
   const { userKey } = useSelector(state => state.auth.userDetails)
   const { t } = useContext(LocalizationContext);
 
-  const [showDialogBox, setShowDialogBox] = useState(false);
   const [loading, setLoading] = useState(false);
   const [shipmentDetails, setShipmentDetails] = useState({})
 
@@ -47,6 +46,10 @@ export const ShipmentDetailsScreen = () => {
     return `${day}-${month}-${year}`;
   };
 
+  const handleShipmentBtnPress = () => {
+    navigation.navigate('pickupProofScreen')
+  }
+
   useEffect(() => {
     if (route?.params?.trackingKey) {
       fetchStatusCardDetails(route.params.trackingKey, userKey);
@@ -55,6 +58,12 @@ export const ShipmentDetailsScreen = () => {
 
   const shipment = shipmentDetails?.driverAllocatedShipment?.shipment || {};
   const shippingDetails = shipment?.shippingDetails || {};
+
+  const btnTextForShipment = shipmentDetails?.driverAllocatedShipment;
+  const shipmentBtnText = btnTextForShipment?.canMarkForPickup
+    ? btnTextForShipment?.btnTextMarkForPickup : btnTextForShipment?.canMarkForOutForDelivery
+      ? btnTextForShipment?.btnTextMarkForOutForDelivery : btnTextForShipment?.canMarkForDrop
+      ? btnTextForShipment?.btnTextMarkForDrop : 'N/A';
 
   return (
     <View style={styles.mainView()}>
@@ -130,18 +139,21 @@ export const ShipmentDetailsScreen = () => {
           </View>
         </View>
         <View style={styles.bottomView()}>
-          <Button title={t("shipment_screen.button_text_1")} btnStyle={styles.button()} btnTextStyle={styles.buttonText()} />
-          <Button onPress={() => setShowDialogBox(true)} linearGradientButton title={t("shipment_screen.button_text_2")} btnStyle={styles.buttonLG()} btnTextStyle={styles.buttonTextLG()} />
+          <Button
+            title={t("shipment_screen.button_text_1")}
+            btnStyle={styles.button()}
+            btnTextStyle={styles.buttonText()}
+          />
+          <Button
+            onPress={handleShipmentBtnPress}
+            linearGradientButton
+            title={shipmentBtnText}
+            btnStyle={styles.buttonLG()}
+            btnTextStyle={styles.buttonTextLG()}
+          />
         </View>
       </Screen>
-      <DialogBox
-        visible={showDialogBox}
-        animationType='fade'
-        title={t("shipment_screen.dialog_title")}
-        message={t("shipment_screen.dialog_message")}
-        onYesPress={() => setShowDialogBox(false)}
-        onNoPress={() => setShowDialogBox(false)}
-      />
+
     </View>
   )
 }

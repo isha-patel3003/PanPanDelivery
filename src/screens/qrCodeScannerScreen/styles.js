@@ -83,17 +83,23 @@ export const row = () => ({
   width: '100%',
   paddingVertical: size.moderateScale(10),
   backgroundColor: color.primary,
-  paddingHorizontal: size.moderateScale(20),
+  paddingHorizontal: size.moderateScale(10),
+  gap: size.moderateScale(10)
 })
 
 export const linkButton = () => ({
+  flex: 1,
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: color.secondary,
+  height: size.moderateScale(40),
+  borderRadius: size.moderateScale(10)
 })
 
 export const linkText = () => ({
-  fontSize: fontSize.small,
+  fontSize: fontSize.verySmall,
   fontFamily: fonts.sarabunBold,
-  color: color.secondary,
-  textDecorationLine: 'underline'
+  color: color.primary,
 })
 
 export const capturedImage = () => ({

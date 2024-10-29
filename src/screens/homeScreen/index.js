@@ -14,7 +14,6 @@ export const HomeScreen = () => {
 
   const navigation = useNavigation();
   const { userDetails } = useSelector(state => state.auth);
-  console.log("userDetails: ", userDetails)
 
   const { t } = useContext(LocalizationContext);
   const { internetConnectivity } = useMainContext();
@@ -42,7 +41,6 @@ export const HomeScreen = () => {
     setLoading(true)
     try {
       const response = await loadDashboardMetrics(userDetails?.userKey);
-      console.log("response: ", response);
       setDashboardMetrics(response);
     } catch (error) {
       console.log("Error in  fetchDashboardMetrics: ", error);

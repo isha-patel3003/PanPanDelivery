@@ -1,4 +1,4 @@
-import {color, fonts, fontSize, size} from '../../theme';
+import { color, fonts, fontSize, size } from '../../theme';
 
 export const btnContainer = (isDisabled) => ({
   flexDirection: 'row',
@@ -15,7 +15,7 @@ export const btnContainer = (isDisabled) => ({
   shadowOffset: { width: 0, height: size.moderateScale(2) },
   shadowOpacity: size.moderateScale(0.1),
   shadowRadius: size.moderateScale(2),
-}); 
+});
 
 
 export const titleStyle = (disabled) => ({
@@ -41,20 +41,21 @@ export const btnContainerLG = () => ({
 });
 
 export const linearGradientButton = () => ({
-  backgroundColor: color.white
+  backgroundColor: color.white,
 });
 
 export const linearGradient = (isDisabled) => ({
   flexDirection: 'row',
   justifyContent: 'center',
   alignItems: 'center',
+  alignSelf: 'center',
   gap: size.moderateScale(8),
   elevation: size.moderateScale(5),
   shadowColor: color.black,
   shadowOffset: { width: 0, height: size.moderateScale(2) },
   shadowOpacity: size.moderateScale(0.1),
   shadowRadius: size.moderateScale(2),
-  minWidth:  size.moderateScale(150),
+  minWidth: size.moderateScale(150),
   paddingVertical: size.moderateScale(10),
   borderRadius: size.moderateScale(8),
   shadowColor: isDisabled ? color.gray : color.black,

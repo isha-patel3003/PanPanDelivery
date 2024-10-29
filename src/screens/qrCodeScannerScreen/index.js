@@ -1,16 +1,14 @@
-import React, { useContext, useEffect, useRef, useState } from 'react'
-import { Image, PermissionsAndroid, Text, TouchableOpacity, View } from "react-native"
-import { Camera, useCameraDevice, useCodeScanner } from 'react-native-vision-camera'
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { Image, PermissionsAndroid, Platform, Text, TouchableOpacity, View } from "react-native";
+import { Camera, useCameraDevice, useCodeScanner } from 'react-native-vision-camera';
 import { useNavigation } from '@react-navigation/native';
-
 import { LocalizationContext } from '../../context';
 import { color, IcBackArrow, IcScanner, size } from '../../theme';
 import { DialogBox, Header, Screen } from '../../components';
-import * as styles from './styles'
+import * as styles from './styles';
 import { loadShipmentDetailsFromBarcode } from '../../services';
 import { useSelector } from 'react-redux';
-
-
+import Toast from 'react-native-toast-message';
 
 export const QRCodeScannerScreen = () => {
 
@@ -19,13 +17,14 @@ export const QRCodeScannerScreen = () => {
   const { userDetails } = useSelector(state => state.auth);
 
   const device = useCameraDevice('back');
-
   const cameraRef = useRef(null);
-  const [loading, setLoading] = useState(false)
+
+  const [loading, setLoading] = useState(false);
   const [cameraPermission, setCameraPermission] = useState(null);
   const [isCameraVisible, setIsCameraVisible] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [scannedData, setScannedData] = useState(null);
+  const [capturedImage, setCapturedImage] = useState(null);
 
   const requestCameraPermission = async () => {
     if (Platform.OS === 'android') {
@@ -43,52 +42,75 @@ export const QRCodeScannerScreen = () => {
         if (granted === PermissionsAndroid.RESULTS.GRANTED) {
           setCameraPermission(true);
           setIsCameraVisible(true);
-        }
-        else {
+        } else {
           setCameraPermission(false);
         }
       } catch (error) {
-        console.log("Error requesting camera permission in android!!", error)
+        console.log("Error requesting camera permission in android!!", error);
       }
-    }
-    else if (Platform.OS === 'ios') {
+    } else if (Platform.OS === 'ios') {
       try {
         const cameraStatus = await Camera.requestCameraPermission();
         if (cameraStatus === 'denied') {
           setCameraPermission(false);
           console.log("You need to allow the permission for camera for scanning the barcode");
-        }
-        else {
+        } else {
           setCameraPermission(true);
           setIsCameraVisible(true);
         }
       } catch (error) {
-        console.log("Error requesting camera permission in ios!!", error)
+        console.log("Error requesting camera permission in ios!!", error);
       }
     }
-  }
+  };
 
   const fetchShipmentDetailsFromBarcode = async (barcode, userKey) => {
-    setLoading(true)
+    setLoading(true);
     try {
       const response = await loadShipmentDetailsFromBarcode(barcode, userKey);
-      console.log(`response for ${barcode}: `,response);
-      if(response.status == 1) {
-        navigation.navigate('shipmentDetailsScreen', {trackingKey:  barcode, userKey});
-        setShowDialog(false);
+      console.log(`response for ${barcode}: `, response);
+      if (response.status == 1) {
+        Toast.show({
+          type: 'success',
+          text1: 'Barcode  scanned successfully',
+          position: 'bottom',
+          bottomOffset: 50
+        })
+        navigation.navigate('shipmentDetailsScreen', { trackingKey: barcode, userKey });
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: `${response.message}`,
+          position: 'bottom',
+          bottomOffset: 50
+        })
       }
     } catch (error) {
-      console.log("Error fetching Shipment details from barcode::", error)
+      console.log("Error fetching Shipment details from barcode::", error);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleReScan = () => {
+    setScannedData(null);
+    setCapturedImage(null);
   }
 
-
-  const handleBarCodeScan = async () => {
-    setLoading(true)
-    setShowDialog(false)
-    await fetchShipmentDetailsFromBarcode(scannedData, userDetails.userKey)
-    setLoading(false)
-  }
+  const takePhoto = async () => {
+    if (cameraRef.current && isCameraVisible) {
+      try {
+        const photo = await cameraRef.current.takePhoto({
+          qualityPrioritization: 'balanced',
+        });
+        return photo.path;
+      } catch (error) {
+        console.log('Error capturing photo: ', error);
+      }
+    } else {
+      console.log('Camera is not active or not available.');
+    }
+  };
 
   const codeScanner = useCodeScanner({
     codeTypes: ['qr', 'ean-13', 'code-128'],
@@ -96,10 +118,20 @@ export const QRCodeScannerScreen = () => {
       codes.map(async (code) => {
         console.log("code::::::: ", code.value);
         setScannedData(code.value);
-        setShowDialog(true)
-      })
+        if (code.value) {
+          const capturedImage = await takePhoto();
+          console.log("image:  ", capturedImage);
+          if (capturedImage) {
+            setCapturedImage(capturedImage);
+            setLoading(true);
+            await fetchShipmentDetailsFromBarcode(code.value, userDetails.userKey);
+            setLoading(false);
+          }
+        }
+        setIsCameraVisible(false);
+      });
     }
-  })
+  });
 
   const checkCameraPermission = async () => {
     const status = await Camera.getCameraPermissionStatus();
@@ -108,9 +140,8 @@ export const QRCodeScannerScreen = () => {
   };
 
   useEffect(() => {
-    checkCameraPermission()
-  }, [])
-
+    checkCameraPermission();
+  }, []);
 
   return (
     <Screen loading={loading} loadingBgColor={color.white}>
@@ -130,48 +161,43 @@ export const QRCodeScannerScreen = () => {
           </View>
           <View style={styles.scannerButtonWrapper(isCameraVisible)}>
             {
-              isCameraVisible && device !== null && cameraPermission ?
-                (
-                  <Camera
-                    ref={cameraRef}
-                    style={{ flex: 1, flexGrow: 1, width: '100%' }}
-                    device={device}
-                    isActive={isCameraVisible}
-                    codeScanner={codeScanner}
-                  />
-                )
-                : (
-                  <TouchableOpacity onPress={() => requestCameraPermission()} activeOpacity={0.7} style={styles.scannerButton()}>
-                    <IcScanner fill={color.secondary} width={size.moderateScale(40)} height={size.moderateScale(40)} />
-                  </TouchableOpacity>
-                )
+              capturedImage ? (
+                <Image
+                  source={{ uri: `file://${capturedImage}` }}
+                  style={{ flex: 1, width: '100%', height: size.moderateScale(200) }}
+                />
+              ) : isCameraVisible && device !== null && cameraPermission ? (
+                <Camera
+                  ref={cameraRef}
+                  photo={true}
+                  style={{ flex: 1, width: '100%' }}
+                  device={device}
+                  isActive={isCameraVisible}
+                  codeScanner={codeScanner}
+                />
+              ) : (
+                <TouchableOpacity onPress={requestCameraPermission} activeOpacity={0.7} style={styles.scannerButton()}>
+                  <IcScanner fill={color.secondary} width={size.moderateScale(40)} height={size.moderateScale(40)} />
+                </TouchableOpacity>
+              )
             }
           </View>
         </View>
-        {/* {
-          scannedData && (
+        {
+          capturedImage && (
             <View style={styles.bottomView()}>
               <View style={styles.row()}>
                 <TouchableOpacity style={styles.linkButton()} onPress={handleReScan}>
                   <Text style={styles.linkText()}>{t("qrCode_scanner_screen.button_text_2")}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.linkButton()} onPress={handleReScan}>
+                <TouchableOpacity style={styles.linkButton()}>
                   <Text style={styles.linkText()}>{t("qrCode_scanner_screen.button_text_3")}</Text>
                 </TouchableOpacity>
               </View>
             </View>
           )
-        } */}
+        }
       </View>
-      <DialogBox
-        visible={showDialog}
-        animationType='fade'
-        title={t("qrCode_scanner_screen.dialog_title")}
-        message={t("qrCode_scanner_screen.dialog_message") + " " + scannedData}
-        onYesPress={handleBarCodeScan}
-        onNoPress={() => setShowDialog(false)}
-      />
     </Screen>
-  )
-}
-
+  );
+};

@@ -20,7 +20,7 @@ export const headerTitle = () => ({
 })
 
 export const topView = () => ({
-  
+
 })
 
 export const trackingId = () => ({
@@ -65,7 +65,7 @@ export const addressBody = () => ({
 })
 
 export const middleView = () => ({
-  
+
 })
 
 export const deliveryStatus = () => ({
@@ -94,7 +94,7 @@ export const textCapitalBold = () => ({
   fontSize: fontSize.middleMedium,
   fontFamily: fonts.sarabunBold,
   textTransform: 'uppercase',
-  textAlign:'center',
+  textAlign: 'center',
 })
 
 export const textLarge = () => ({
@@ -130,31 +130,31 @@ export const totalEarningView = () => ({
 export const bottomView = () => ({
   flexDirection: 'row',
   width: '100%',
-  gap: size.moderateScale(20),
-  paddingHorizontal: size.moderateScale(20),
+  gap: size.moderateScale(10),
+  paddingHorizontal: size.moderateScale(10),
   paddingVertical: size.moderateScale(20),
 })
 
 export const button = () => ({
-  width: size.moderateScale(150),
-  paddingVertical: size.moderateScale(13),
-  borderRadius: size.moderateScale(20)
+  flex: 1,
+  paddingVertical: size.moderateScale(15),
+  borderRadius: size.moderateScale(10)
 })
 
 export const buttonLG = () => ({
-  width: size.moderateScale(150),
-  paddingVertical: size.moderateScale(13),
-  borderRadius: size.moderateScale(20)
+  flex: 1,
+  paddingVertical: size.moderateScale(15),
+  borderRadius: size.moderateScale(10)
 })
 
 export const buttonText = () => ({
   color: color.primary,
-  fontSize: fontSize.smallMedium,
+  fontSize: fontSize.small,
   fontFamily: fonts.sarabunMedium,
 })
 
 export const buttonTextLG = () => ({
   color: color.secondary,
-  fontSize: fontSize.smallMedium,
+  fontSize: fontSize.small,
   fontFamily: fonts.sarabunMedium,
 })

@@ -45,7 +45,7 @@ export const OrderScreen = () => {
 
   const animatedHeight = dropPointAnimation.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, dropPoints.length * 70],
+    outputRange: [0, dropPoints.length * 60],
   });
 
   const animatedOpacity = dropPointAnimation.interpolate({
@@ -55,7 +55,7 @@ export const OrderScreen = () => {
 
 
   const renderDropPoint = ({ item }) => {
-    const itemEllipsis = item.length > 30 ? item.slice(0, 30) + '...' : item;
+    const itemEllipsis = item.length > 35 ? item.slice(0, 35) + '...' : item;
     return (
       <View style={styles.locationView2()}>
         <IcRoute width={size.moderateScale(25)} height={size.moderateScale(25)} fill={color.redColor} />
@@ -186,7 +186,7 @@ export const OrderScreen = () => {
               ref={swipeButtonRef}
               title={`${t('orders_screen.pre_button_title')} ${dropPoints.length} ${t('orders_screen.post_button_title')}`}
               icon
-              renderIcon={() => (<IcMotorBike fill={color.secondary} width={size.moderateScale(30)} height={size.moderateScale(30)} />)}
+              renderIcon={() => (<IcMotorBike fill={color.secondary} width={size.moderateScale(25)} height={size.moderateScale(25)} />)}
               gradientColors={[color.black, color.primary, '#6f5fed']}
               gradientLocations={[0, 0.6, 1]}
               onSwipeSuccess={handleAcceptDelivery}

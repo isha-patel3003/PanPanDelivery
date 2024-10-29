@@ -228,7 +228,7 @@ export const loadShipmentList = async (statusCode, userKey) => {
 export const loadShipmentDetailsFromBarcode = async (shipmentTrackingKey, userKey) => {
   let { _api_calls } = HttpCalls;
 
-  const  body = {
+  const body = {
     deliveryLatitude: 0.0,
     deliveryLongitude: 0.0,
     length: 0,
@@ -249,3 +249,36 @@ export const loadShipmentDetailsFromBarcode = async (shipmentTrackingKey, userKe
   return _api_calls('POST', '/appDriverOps/loadShipmentDetailFromBarcode', headers, body);
 }
 
+export const setShipmentStatusAsPicked = async (userKey, data) => {
+  let { _api_calls } = HttpCalls;
+  const file = {
+    uri: data?.url,
+    type: data?.imageType,
+    name: 'proofOfPickup.jpg',
+  };
+
+  const formData =  new FormData();
+  formData.append('proofOfPickupAtt', file);
+  formData.append('shipmentQrStr', data?.shipmentQrStr);
+  formData.append('pickupLatitude', data?.pickupLatitude);
+  formData.append('pickupLongitude', data?.pickupLongitude);
+  formData.append('sizeLength', data?.sizeLength);
+  formData.append('sizeWidth', data?.sizeWidth);
+  formData.append('sizeHeight', data?.sizeHeight);
+  formData.append('weight', data?.weight);
+
+  console.log("formData: ",formData)
+  
+  const params = {
+    type: 'multipart/form-data',
+    apikey: API_KEY,
+    langcode: 'EN',
+    reqfrom: 'pnl-drv',
+    tzofs: 330,
+    tzstr: 'Asia/Calcutta',
+    drukey: userKey
+  }
+
+  let headers = await headersData(params);
+  return _api_calls('POST', '/appDriverOps/setShipmentStatusAsPicked', headers, formData);
+}

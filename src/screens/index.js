@@ -8,6 +8,7 @@ export * from './shipmentDetailsScreen'
 export * from './qrCodeScannerScreen'
 export * from './orderScreen'
 export * from './deliveryStatusScreen'
+export * from './pickupProofScreen'
 
 //authStack Screens
 export * from './loginScreen'

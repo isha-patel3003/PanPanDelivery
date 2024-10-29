@@ -20,11 +20,13 @@ export const StringValidation = val => {
   let characterRegex = /^[a-zA-Z\s?.?]*$/;
   return characterRegex.test(val);
 };
+
 export const passwordValidation = val => {
   passwordPattern =
     /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@$!%*?&])([a-zA-Z0-9@$!%*?&]{8,})$/;
   return passwordPattern.test(val);
 };
+
 export const formatCreditCardNumber = input => {
   // Remove non-numeric characters
   const numericInput = input.replace(/(.{4})/g, '$1 ');
@@ -40,6 +42,7 @@ export const formatCreditCardNumber = input => {
 
   return formattedInput;
 };
+
 export const invertColor = color => {
   // Assuming color is in the format 'rgba(r, g, b, a)'
   const values = color.match(/\d+/g).map(Number);
@@ -47,16 +50,6 @@ export const invertColor = color => {
   const alpha = values[3] || 1; // Preserve alpha if present
   return `rgba(${invertedValues.join(', ')}, ${alpha})`;
 };
-
-// export const imageView = img => {
-//   const originalUrl = API_URL;
-
-//   // Remove "/api" from the URL
-//   const modifiedUrl = originalUrl.replace('/api', '');
-//   const imgData = modifiedUrl + '/' + img;
-
-//   return imgData;
-// };
 
 export const calculateDiscountedPrice = (originalPrice, percentageDiscount) => {
   const discountAmount = (originalPrice * percentageDiscount) / 100;
@@ -103,6 +96,7 @@ export const compareExpiryDate = inputDate => {
     return false;
   }
 };
+
 export const validateCVV = cvv => {
   // Assuming CVV should be a 3 or 4-digit number
   if (cvv) {
@@ -158,3 +152,23 @@ export const formatCurrency = amount => {
 export const dateFormat = "DD MMM YYYY";
 
 export const attendanceDateFormat = "YYYY-MM-DD";
+
+export const getImageType = (fileUri) => {
+  const extension = fileUri.split('.').pop().toLowerCase();
+
+  switch (extension) {
+    case 'jpg':
+    case 'jpeg':
+      return 'image/jpeg';
+    case 'png':
+      return 'image/png';
+    case 'gif':
+      return 'image/gif';
+    case 'bmp':
+      return 'image/bmp';
+    case 'webp':
+      return 'image/webp';
+    default:
+      return 'application/octet-stream'; // Fallback type if unknown
+  }
+};

@@ -26,7 +26,7 @@ export const gradientBtn = () => ({
 
 export const btnText = () => ({
   fontFamily: fonts.sarabunSemiBold,
-  fontSize: fontSize.small,
+  fontSize: fontSize.verySmall,
   color: color.secondary,
 })
 

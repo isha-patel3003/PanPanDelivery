@@ -8,16 +8,15 @@ import { color } from '../../theme';
 export const Button = ({
   title,
   onPress,
-  btnStyle,
-  btnTextStyle,
-  disabled,
+  btnStyle = {},
+  btnTextStyle = {},
+  disabled = false,
   icon,
   renderIcon,
-  linearGradientButton,
+  linearGradientButton = false,
   gradientColors,
   gradientLocations,
 }) => {
-
   const [isDisabled, setIsDisabled] = useState(disabled);
   const defaultColors = [color.black, color.primary];
   const defaultLocations = [0, 1];
@@ -26,7 +25,7 @@ export const Button = ({
 
   const handlePressIn = () => {
     Animated.spring(scaleValue, {
-      toValue: 0.95, 
+      toValue: 0.95,
       useNativeDriver: true,
     }).start();
   };
@@ -47,18 +46,29 @@ export const Button = ({
 
   const handlePress = () => {
     if (!isDisabled && onPress) {
-      resetScale()
+      resetScale();
       onPress();
     }
   };
 
   useEffect(() => {
     setIsDisabled(disabled);
-
     return () => {
       resetScale();
     };
   }, [disabled]);
+
+  const commonStyle = {
+    ...btnStyle,
+    opacity: isDisabled ? 0.5 : 1,
+  };
+
+  const content = (
+    <>
+      {icon && renderIcon ? renderIcon() : null}
+      <Text style={[styles.titleStyle(isDisabled), btnTextStyle]}>{title}</Text>
+    </>
+  );
 
   if (linearGradientButton) {
     return (
@@ -67,42 +77,30 @@ export const Button = ({
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         disabled={isDisabled}
-        style={[styles.linearGradientButton(), { opacity: isDisabled ? 0.5 : 1 }]}
       >
-        <Animated.View style={[{ transform: [{ scale: scaleValue }] }]}>
-        <LinearGradient
-          colors={gradientColors || defaultColors}
-          locations={gradientLocations || defaultLocations}
-          useAngle={true}
-          angle={90}
-          style={[styles.linearGradient(), btnStyle]}
-        >
-           {
-            icon && renderIcon
-              ? renderIcon()
-              : null
-          }
-          <Text style={[styles.lGBtntitleStyle(isDisabled), btnTextStyle]}>{title}</Text>
-        </LinearGradient>
+        <Animated.View style={[commonStyle, { transform: [{ scale: scaleValue }] }]}>
+          <LinearGradient
+            colors={gradientColors || defaultColors}
+            locations={gradientLocations || defaultLocations}
+            useAngle={true}
+            angle={90}
+            style={[styles.linearGradient(), commonStyle]}
+          >
+            {content}
+          </LinearGradient>
         </Animated.View>
       </TouchableWithoutFeedback>
     );
   } else {
     return (
       <TouchableWithoutFeedback
-      onPress={handlePress}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
         disabled={isDisabled}
-        style={[styles.btnContainer(isDisabled), btnStyle]}
       >
-        <Animated.View style={[{ transform: [{ scale: scaleValue }] }, styles.btnContainer(isDisabled), btnStyle]}>
-        {
-          icon && renderIcon
-            ? renderIcon()
-            : null
-        }
-        <Text style={[styles.titleStyle(disabled), btnTextStyle]}>{title}</Text>
+        <Animated.View style={[commonStyle, styles.btnContainer(isDisabled), { transform: [{ scale: scaleValue }] }]}>
+          {content}
         </Animated.View>
       </TouchableWithoutFeedback>
     );

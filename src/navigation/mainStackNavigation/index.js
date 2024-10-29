@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { NavigationContainer } from '@react-navigation/native';
 import NetInfo from '@react-native-community/netinfo'
 
-import { DeliveryScreen, DeliveryStatusScreen, DemoScreen, OrderScreen, QRCodeScannerScreen, ShipmentDetailsScreen, SplashScreen, UserDetailsScreen } from '../../screens';
+import { DeliveryScreen, DeliveryStatusScreen, DemoScreen, OrderScreen, PickupProofScreen, QRCodeScannerScreen, ShipmentDetailsScreen, SplashScreen, UserDetailsScreen } from '../../screens';
 import { useMainContext } from '../../context';
 import { AuthStackNavigation } from '../authStackNavigation';
 import { BottomStackNavigation } from '../bottomStackNavigation';
@@ -74,6 +74,7 @@ export const MainStackNavigation = () => {
         <Stack.Screen component={UserDetailsScreen} name='userDetailsScreen' />
         <Stack.Screen component={DeliveryStatusScreen} name='deliveryStatusScreen' />
         <Stack.Screen component={ShipmentDetailsScreen} name='shipmentDetailsScreen' />
+        <Stack.Screen component={PickupProofScreen} name='pickupProofScreen' />
         <Stack.Screen component={OrderScreen} name='orderScreen' />
         <Stack.Screen component={DeliveryScreen} name='deliveryScreen' />
       </Stack.Navigator>
