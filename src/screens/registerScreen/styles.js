@@ -12,7 +12,6 @@ export const header = () => ({
 export const headerText = () => ({
   color: color.secondary,
   paddingLeft: size.moderateScale(5),
-  fontSize: fontSize.middleMedium
 })
 
 export const uploadPhotoWrapper = (error) => ({

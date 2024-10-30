@@ -7,8 +7,8 @@ import { color } from '../../Colors'
 export const BackArrow = props => {
   return (
     <Svg
-      width={props.width ?? size.moderateScale(30)}
-      height={props.height ?? size.moderateScale(30)}
+      width={props.width ?? size.moderateScale(25)}
+      height={props.height ?? size.moderateScale(25)}
       viewBox="0 0 24 24"
       xmlns="http://www.w3.org/2000/svg"
       {...props}

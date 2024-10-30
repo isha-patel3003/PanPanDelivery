@@ -164,7 +164,7 @@ export const OTPScreen = () => {
       <View style={styles.container()}>
         <Header
           leftIcon
-          renderLeftIcon={() => (<IcBackArrow width={size.moderateScale(30)} height={size.moderateScale(30)} fill={color.primary} />)}
+          renderLeftIcon={() => (<IcBackArrow fill={color.primary} />)}
           headerLeftIconPress={() => navigation.goBack()}
         />
         <View style={styles.middleView()}>

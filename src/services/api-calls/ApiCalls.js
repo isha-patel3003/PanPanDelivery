@@ -209,8 +209,7 @@ export const loadShipmentList = async (statusCode, userKey) => {
   let { _api_calls } = HttpCalls;
 
   const body = {
-    // "shipmentStatusCode" : statusCode,
-    "shipmentStatusCode": 'PCK-ASGD',
+    "shipmentStatusCode": statusCode,
   }
   const params = {
     apikey: API_KEY,
@@ -243,6 +242,7 @@ export const loadShipmentDetailsFromBarcode = async (shipmentTrackingKey, userKe
     tzstr: 'Asia/Calcutta',
     drukey: userKey
   }
+  console.log("shipmentTrackingKey in loadShipmentDetailsFromBarcode api-calls: ",shipmentTrackingKey)
 
   let headers = await headersData(params);
 
@@ -250,14 +250,16 @@ export const loadShipmentDetailsFromBarcode = async (shipmentTrackingKey, userKe
 }
 
 export const setShipmentStatusAsPicked = async (userKey, data) => {
+
   let { _api_calls } = HttpCalls;
   const file = {
     uri: data?.url,
     type: data?.imageType,
     name: 'proofOfPickup.jpg',
   };
+  console.log("data in api calls:: ", data)
 
-  const formData =  new FormData();
+  const formData = new FormData();
   formData.append('proofOfPickupAtt', file);
   formData.append('shipmentQrStr', data?.shipmentQrStr);
   formData.append('pickupLatitude', data?.pickupLatitude);
@@ -267,8 +269,8 @@ export const setShipmentStatusAsPicked = async (userKey, data) => {
   formData.append('sizeHeight', data?.sizeHeight);
   formData.append('weight', data?.weight);
 
-  console.log("formData: ",formData)
-  
+  console.log("formData in api-calls::: ", formData)
+
   const params = {
     type: 'multipart/form-data',
     apikey: API_KEY,
@@ -281,4 +283,23 @@ export const setShipmentStatusAsPicked = async (userKey, data) => {
 
   let headers = await headersData(params);
   return _api_calls('POST', '/appDriverOps/setShipmentStatusAsPicked', headers, formData);
+}
+
+export const setShipmentStatusAsDropped = async (userKey, shipmentQrStr) => {
+  let { _api_calls } = HttpCalls;
+  
+  const body = {
+    shipmentQrStr: shipmentQrStr
+  } 
+
+  let params = {
+    apikey: API_KEY,
+    langcode: 'EN',
+    reqfrom: 'pnl-drv',
+    tzofs: 330,
+    tzstr: 'Asia/Calcutta',
+    drukey: userKey
+  }
+  let headers = await headersData(params);
+  return  _api_calls('POST', '/appDriverOps/setShipmentStatusAsDropped', headers, body);
 }

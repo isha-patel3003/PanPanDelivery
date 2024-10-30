@@ -26,6 +26,8 @@ export const Screen = ({
     loading,
     loadingBgColor,
     translucent,
+    scrollEnabled,
+    refreshControl,
     ...props
 }) => {
 
@@ -49,6 +51,8 @@ export const Screen = ({
           extraScrollHeight={extraScrollHeight}
           enableOnAndroid={true}
           alwaysBounceVertical={false}
+          scrollEnabled={scrollEnabled}
+          refreshControl={refreshControl}
           {...props}>
           <View style={styles.full(translucent)}>{children}</View>
         </KeyboardAwareScrollView>

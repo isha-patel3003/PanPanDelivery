@@ -24,8 +24,8 @@ export const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: false, // Disable serialization checks for AsyncStorage compatibility
-    })
+      serializableCheck: false,
+    }).concat(thunk)
 });
 
 

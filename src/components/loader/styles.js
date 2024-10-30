@@ -1,14 +1,15 @@
 import { color, size } from "../../theme";
 
 export const mainView = (bgColor) => ({
-  zIndex: 100,
-  alignSelf: 'center',
-  justifyContent: 'center',
-  backgroundColor: bgColor ?? color.primary,
-  height: size.deviceHeight,
-  width: size.deviceWidth * 2,
   position: 'absolute',
+  backgroundColor: bgColor ?? color.redColor, 
+  zIndex: 100,
+  justifyContent: 'center',
+  alignItems: 'center',
+  height: size.deviceHeight,
+  width: size.deviceWidth,
   transform: [{scale: 2}],
+  top: size.moderateScale(-30)
 });
 
 export const lottieImage = () => ({

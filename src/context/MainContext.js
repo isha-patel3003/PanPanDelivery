@@ -10,6 +10,9 @@ export const MainContextProvider = props => {
   const [otp, setOtp] = useState(null)
   const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
   const [bottomBarHeight, setBottomBarHeight] = useState(0);
+  const [deliveryStatusCode, setDeliveryStatusCode] = useState('');
+  const [deliveryTrackingKey, setDeliveryTrackingKey] = useState('');
+  const [shipmentQRString, setShipmentQRString] = useState('')
   const [dropPoints, setDropPoints] = useState([
     '47/1021 Nimitrmai Sam War Tawantok Khlongsamwa',
     'Kubon, Bangked, Bangked',
@@ -32,6 +35,12 @@ export const MainContextProvider = props => {
       setInternetConnectivity: setInternetConnectivity,
       otp: otp,
       setOtp: setOtp,
+      deliveryStatusCode: deliveryStatusCode,
+      setDeliveryStatusCode: setDeliveryStatusCode,
+      deliveryTrackingKey: deliveryTrackingKey,
+      setDeliveryTrackingKey: setDeliveryTrackingKey,
+      shipmentQRString: shipmentQRString,
+      setShipmentQRString: setShipmentQRString
     }
   }, [
     phoneNumber, setPhoneNumber,
@@ -40,6 +49,9 @@ export const MainContextProvider = props => {
     dropPoints, setDropPoints,
     internetConnectivity, setInternetConnectivity,
     otp, setOtp,
+    deliveryStatusCode, setDeliveryStatusCode,
+    deliveryTrackingKey, setDeliveryTrackingKey,
+    shipmentQRString, setShipmentQRString
   ]);
 
   return <context.Provider value={value}>{props.children}</context.Provider>;

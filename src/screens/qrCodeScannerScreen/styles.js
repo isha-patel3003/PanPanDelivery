@@ -13,7 +13,6 @@ export const header = () => ({
 
 export const headerTitle = () => ({
   color: color.secondary,
-  fontSize: fontSize.littleMedium,
   textAlign: 'center',
 })
 

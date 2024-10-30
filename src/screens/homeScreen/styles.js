@@ -167,7 +167,7 @@ export const row = () => ({
 })
 
 export const cardWrapperTitle = () => ({
-  fontSize: fontSize.middleMedium,
+  fontSize: fontSize.littleMedium,
   fontFamily: fonts.sarabunSemiBold,
   color: color.black,
 })

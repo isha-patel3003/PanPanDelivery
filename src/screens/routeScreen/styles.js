@@ -12,7 +12,6 @@ export const header = () => ({
 export const headerTitle = () => ({
   color: color.secondary,
   textAlign: 'center',
-  fontSize: fontSize.middleSmallMedium,
 })
 
 export const mapView = () => ({

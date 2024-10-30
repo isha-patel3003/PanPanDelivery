@@ -11,7 +11,6 @@ export const header = () => ({
 
 export const headerText = () => ({
   color: color.secondary,
-  fontSize: fontSize.littleMedium,
 })
 
 export const middleView = () => ({
@@ -31,6 +30,12 @@ export const camera = () => ({
 
 export const image = () => ({
   flex: 1,
+})
+
+export const indicator = () => ({
+  flex: 1,
+  alignItems: 'center',
+  justifyContent: 'center'
 })
 
 export const bottomView = () => ({

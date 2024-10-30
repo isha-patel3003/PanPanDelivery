@@ -1,13 +1,13 @@
-import React, { useContext, useEffect, useRef, useState } from 'react'
-import { View, Text, TouchableOpacity, TextInput, Image, Alert, ActivityIndicator } from 'react-native'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
+import { View, Text, TouchableOpacity, TextInput, Image, Alert, RefreshControl } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import { useNavigation } from '@react-navigation/native'
+import { useFocusEffect, useNavigation } from '@react-navigation/native'
 
 import { LocalizationContext, useMainContext } from '../../context'
 import { color, IcBarCode, IcLeftArrow, IcParcelBox, IcRightArrow, IcSearch, images, size } from '../../theme'
 import { Screen, StatusCard, Switch } from '../../components'
 import * as styles from './styles'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { loadDashboardMetrics } from '../../services'
 
 export const HomeScreen = () => {
@@ -16,12 +16,20 @@ export const HomeScreen = () => {
   const { userDetails } = useSelector(state => state.auth);
 
   const { t } = useContext(LocalizationContext);
+  const { deliveryStatusCode, setDeliveryStatusCode } = useMainContext();
   const { internetConnectivity } = useMainContext();
 
   const [trackingID, setTrackingID] = useState('');
   const [loading, setLoading] = useState(false);
   const [switchValue, setSwitchValue] = useState(internetConnectivity ?? false);
   const [dashboardMetrics, setDashboardMetrics] = useState({});
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchDashboardMetrics(); 
+    setRefreshing(false);
+  };
 
   const handleSwitchValue = () => {
     if (internetConnectivity) {
@@ -50,6 +58,7 @@ export const HomeScreen = () => {
   }
 
   const statusCardOnpress = (statusCard) => {
+    setDeliveryStatusCode(statusCard)
     navigation.navigate('deliveryStatusScreen', { statusCode: statusCard })
   }
 
@@ -67,9 +76,12 @@ export const HomeScreen = () => {
     }
   }, [switchValue])
 
-  useEffect(() => {
-    fetchDashboardMetrics()
-  }, [])
+  useFocusEffect(
+    useCallback(() => {
+      fetchDashboardMetrics()
+      handleRefresh()
+    }, [])
+  )
 
   return (
     <Screen style={{ flex: 1 }}>
@@ -78,7 +90,15 @@ export const HomeScreen = () => {
           style={{ flex: 1 }}
           contentContainerStyle={{ flexGrow: 1, paddingBottom: size.moderateScale(80) }}
           showsVerticalScrollIndicator={false}
-          alwaysBounceVertical={false}
+          alwaysBounceVertical={true}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={[color.primary, color.secondary, color.tertiaryTextColor]}
+              tintColor={color.primary}
+            />
+          }
         >
           <View style={styles.topView()}>
             <View style={styles.riderContainer()}>
@@ -137,61 +157,49 @@ export const HomeScreen = () => {
             <View style={styles.cardWrapper()}>
               <View style={styles.cardView()}>
                 <Text style={styles.cardWrapperTitle()}>{t('home_screen.card_title_1')}</Text>
-                {
-                  loading
-                    ? (<ActivityIndicator size="large" color={color.primary} />)
-                    : (
-                      <View style={styles.row()}>
-                        <StatusCard
-                          onPress={() => statusCardOnpress(dashboardMetrics?.pending?.statusCode)}
-                          bgColor={dashboardMetrics?.pending?.colorCode}
-                          title={dashboardMetrics?.pending?.shipmentCount}
-                          bodyText={dashboardMetrics?.pending?.statusTextDriver}
-                        />
-                        <StatusCard
-                          onPress={() => statusCardOnpress(dashboardMetrics?.outForDelivery?.statusCode)}
-                          bgColor={dashboardMetrics?.outForDelivery?.colorCode}
-                          title={dashboardMetrics?.outForDelivery?.shipmentCount}
-                          bodyText={dashboardMetrics?.outForDelivery?.statusTextDriver}
-                        />
-                        <StatusCard
-                          onPress={() => statusCardOnpress(dashboardMetrics?.delivered?.statusCode)}
-                          bgColor={dashboardMetrics?.delivered?.colorCode}
-                          title={dashboardMetrics?.delivered?.shipmentCount}
-                          bodyText={dashboardMetrics?.delivered?.statusTextDriver}
-                        />
-                      </View>
-                    )
-                }
+                <View style={styles.row()}>
+                  <StatusCard
+                    onPress={() => statusCardOnpress(dashboardMetrics?.pending?.statusCode)}
+                    bgColor={dashboardMetrics?.pending?.colorCode}
+                    title={dashboardMetrics?.pending?.shipmentCount}
+                    bodyText={dashboardMetrics?.pending?.statusTextDriver}
+                  />
+                  <StatusCard
+                    onPress={() => statusCardOnpress(dashboardMetrics?.outForDelivery?.statusCode)}
+                    bgColor={dashboardMetrics?.outForDelivery?.colorCode}
+                    title={dashboardMetrics?.outForDelivery?.shipmentCount}
+                    bodyText={dashboardMetrics?.outForDelivery?.statusTextDriver}
+                  />
+                  <StatusCard
+                    onPress={() => statusCardOnpress(dashboardMetrics?.delivered?.statusCode)}
+                    bgColor={dashboardMetrics?.delivered?.colorCode}
+                    title={dashboardMetrics?.delivered?.shipmentCount}
+                    bodyText={dashboardMetrics?.delivered?.statusTextDriver}
+                  />
+                </View>
               </View>
               <View style={styles.cardView()}>
                 <Text style={styles.cardWrapperTitle()}>{t('home_screen.card_title_2')}</Text>
-                {
-                  loading
-                    ? (<ActivityIndicator size="large" color={color.primary} />)
-                    : (
-                      <View style={styles.row()}>
-                        <StatusCard
-                          onPress={() => statusCardOnpress(dashboardMetrics?.pickupPending?.statusCode)}
-                          bgColor={dashboardMetrics?.pickupPending?.colorCode}
-                          title={dashboardMetrics?.pickupPending?.shipmentCount}
-                          bodyText={dashboardMetrics?.pickupPending?.statusTextDriver}
-                        />
-                        <StatusCard
-                          onPress={() => statusCardOnpress(dashboardMetrics?.picked?.statusCode)}
-                          bgColor={dashboardMetrics?.picked?.colorCode}
-                          title={dashboardMetrics?.picked?.shipmentCount}
-                          bodyText={dashboardMetrics?.picked?.statusTextDriver}
-                        />
-                        <StatusCard
-                          onPress={() => statusCardOnpress(dashboardMetrics?.dropped?.statusCode)}
-                          bgColor={dashboardMetrics?.dropped?.colorCode}
-                          title={dashboardMetrics?.dropped?.shipmentCount}
-                          bodyText={dashboardMetrics?.dropped?.statusTextDriver}
-                        />
-                      </View>
-                    )
-                }
+                <View style={styles.row()}>
+                  <StatusCard
+                    onPress={() => statusCardOnpress(dashboardMetrics?.pickupPending?.statusCode)}
+                    bgColor={dashboardMetrics?.pickupPending?.colorCode}
+                    title={dashboardMetrics?.pickupPending?.shipmentCount}
+                    bodyText={dashboardMetrics?.pickupPending?.statusTextDriver}
+                  />
+                  <StatusCard
+                    onPress={() => statusCardOnpress(dashboardMetrics?.picked?.statusCode)}
+                    bgColor={dashboardMetrics?.picked?.colorCode}
+                    title={dashboardMetrics?.picked?.shipmentCount}
+                    bodyText={dashboardMetrics?.picked?.statusTextDriver}
+                  />
+                  <StatusCard
+                    onPress={() => statusCardOnpress(dashboardMetrics?.dropped?.statusCode)}
+                    bgColor={dashboardMetrics?.dropped?.colorCode}
+                    title={dashboardMetrics?.dropped?.shipmentCount}
+                    bodyText={dashboardMetrics?.dropped?.statusTextDriver}
+                  />
+                </View>
               </View>
             </View>
           </View>

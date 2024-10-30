@@ -1,34 +1,36 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableHighlight } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, Text, TouchableHighlight, FlatList, RefreshControl } from 'react-native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
 
-import { Header, Screen } from '../../components';
 import { color, IcBackArrow, IcRoute, size } from '../../theme';
-import { useNavigation, useRoute } from '@react-navigation/native';
 import { loadShipmentList } from '../../services';
+import { useMainContext } from '../../context';
+import { Header, Screen } from '../../components';
 import * as styles from './styles';
-import { setUserTrackingKey } from '../../redux/actions/UserAction';
 
 export const DeliveryStatusScreen = () => {
   const navigation = useNavigation();
-  const route = useRoute();
-  console.log("route: ",route?.params)
-  const dispatch = useDispatch();
   const { userKey } = useSelector(state => state.auth.userDetails);
+  const { deliveryStatusCode, setDeliveryStatusCode, setDeliveryTrackingKey } = useMainContext();
 
-  const [shipmentStatusCode, setShipmentStatusCode] = useState(route?.params?.statusCode);
   const [loading, setLoading] = useState(false);
   const [shipmentDetails, setShipmentDetails] = useState({});
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchStatusCardDetails(deliveryStatusCode, userKey);
+    setRefreshing(false);
+  };
 
   const fetchStatusCardDetails = async (statusCard, userKey) => {
     setLoading(true);
     try {
       const response = await loadShipmentList(statusCard, userKey);
       if (response.status === 1) {
-        console.log("response in loadShipmentList: ",response)
+        console.log("response in loadShipmentList: ", response)
         setShipmentDetails(response);
-        const trackingKey = response?.driverDeliveryAllocatedShipments?.[0]?.shipment?.shipmentTrackingKey;
-        dispatch(setUserTrackingKey(trackingKey))
       } else {
         console.log('response in shipment when status -1: ', response);
       }
@@ -48,70 +50,100 @@ export const DeliveryStatusScreen = () => {
     return `${day}-${month}-${year}`;
   };
 
-  const handleShipmentCardPress = (trackingKey, userKey) => {
-    console.log("trackingKey: ",trackingKey)
-    if (!shipmentStatusCode || !userKey) {
-      console.log('Missing status code or user key');
-      return;
-    }
+  const handleShipmentCardPress = (trackingKey, userKey, statusCode) => {
+    setDeliveryStatusCode(statusCode);
+    setDeliveryTrackingKey(trackingKey)
     navigation.navigate('shipmentDetailsScreen', { trackingKey, userKey });
   };
 
+  const renderShipmentItem = ({ item }) => {
+    const shipment = item?.shipment || {};
+    const shippingDetails = shipment?.shippingDetails || {};
+
+    return (
+      <TouchableHighlight
+        key={shipment?.shipmentTrackingKey}
+        style={{ borderRadius: size.moderateScale(10), marginBottom: 10 }}
+        activeOpacity={0.7}
+        underlayColor={color.customBlack(0.2)}
+        onPress={() => handleShipmentCardPress(shipment?.shipmentTrackingKey, userKey, shipment?.shipmentStatusCode)}
+      >
+        <View style={styles.card()}>
+          <View style={styles.iconView()}>
+            <IcRoute fill={color.secondary} />
+          </View>
+          <View style={styles.cardDetails()}>
+            <View style={styles.cardHeader()}>
+              <Text style={styles.trackingID()}>
+                {shipment?.shipmentTrackingKey || 'No Tracking Key'}
+              </Text>
+              <Text style={styles.dateText()}>
+                {formatDate(shipment?.processingDate)}
+              </Text>
+            </View>
+            <View style={styles.cardBody()}>
+              <Text style={styles.cardText()}>
+                {shippingDetails?.customerName || 'No Customer Name'}
+              </Text>
+              <Text style={styles.cardText()}>
+                {shippingDetails?.customerAddressStr || 'No Address Provided'}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </TouchableHighlight>
+    );
+  };
+
   useEffect(() => {
-    if (route?.params?.statusCode) {
-      setShipmentStatusCode(route?.params?.statusCode);
-      fetchStatusCardDetails(route.params.statusCode, userKey);
+    if (deliveryStatusCode) {
+      fetchStatusCardDetails(deliveryStatusCode, userKey);
     }
-  }, [route, userKey]);
+  }, [userKey]);
 
-  const shipment = shipmentDetails?.driverDeliveryAllocatedShipments?.[0]?.shipment || {};
-  const shippingDetails = shipment?.shippingDetails || {};
-
+  useFocusEffect(
+    useCallback(() => {
+      if (deliveryStatusCode) {
+        handleRefresh()
+        fetchStatusCardDetails(deliveryStatusCode, userKey);
+      }
+    }, [])
+  )
 
   return (
-    <Screen style={styles.mainView()}>
+    <View style={styles.mainView()}>
       <Header
-        title="Pending Pickups"
+        title={shipmentDetails?.deliveryAllocationStatus?.statusTextDriver}
         leftIcon
         renderLeftIcon={() => <IcBackArrow fill={color.secondary} />}
         headerLeftIconPress={() => navigation.goBack()}
         headerStyle={styles.header()}
         headerTitleStyle={styles.headerTitle()}
       />
-      <Screen withScroll scrollStyle={{ flexGrow: 1 }} loading={loading} loadingBgColor={color.white}>
+      <Screen loading={loading} loadingBgColor={color.white}>
         <View style={styles.cardWrapper()}>
-          <TouchableHighlight
-            style={{ borderRadius: size.moderateScale(10) }}
-            activeOpacity={0.7}
-            underlayColor={color.customBlack(0.2)}
-            onPress={() => handleShipmentCardPress(shipment?.shipmentTrackingKey, userKey)}
-          >
-            <View style={styles.card()}>
-              <View style={styles.iconView()}>
-                <IcRoute fill={color.secondary} />
-              </View>
-              <View style={styles.cardDetails()}>
-                <View style={styles.cardHeader()}>
-                  <Text style={styles.trackingID()}>
-                    {shipment?.shipmentTrackingKey || 'No Tracking Key'}
-                  </Text>
-                  <Text style={styles.dateText()}>
-                    {formatDate(shipmentDetails?.driverDeliveryAllocatedShipments?.[0]?.updatedAt)}
-                  </Text>
-                </View>
-                <View style={styles.cardBody()}>
-                  <Text style={styles.cardText()}>
-                    {shippingDetails?.customerName || 'No Customer Name'}
-                  </Text>
-                  <Text style={styles.cardText()}>
-                    {shippingDetails?.customerAddressStr || 'No Address Provided'}
-                  </Text>
-                </View>
-              </View>
+          {shipmentDetails?.driverDeliveryAllocatedShipments?.length > 0 ? (
+            <FlatList
+              renderItem={renderShipmentItem}
+              data={shipmentDetails?.driverDeliveryAllocatedShipments}
+              contentContainerStyle={{ paddingBottom: 20 }}
+              keyExtractor={(item, index) => item?.shipment?.shipmentTrackingKey || index.toString()}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={handleRefresh}
+                  colors={[color.primary, color.secondary, color.tertiaryTextColor]}
+                  tintColor={color.primary}
+                />
+              }
+            />
+          ) : (
+            <View style={styles.centerTextView()}>
+              <Text style={styles.centerText()}>No data found!</Text>
             </View>
-          </TouchableHighlight>
+          )}
         </View>
       </Screen>
-    </Screen>
+    </View>
   );
 };

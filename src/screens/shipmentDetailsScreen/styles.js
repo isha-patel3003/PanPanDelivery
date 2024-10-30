@@ -15,7 +15,6 @@ export const header = () => ({
 
 export const headerTitle = () => ({
   color: color.secondary,
-  fontSize: fontSize.middleMedium,
   textAlign: 'center'
 })
 
@@ -43,7 +42,7 @@ export const row = () => ({
   flexDirection: 'row',
   alignItems: 'center',
   gap: size.moderateScale(10),
-  paddingHorizontal: size.moderateScale(20)
+  paddingHorizontal: size.moderateScale(10)
 })
 
 export const details = () => ({
@@ -70,7 +69,7 @@ export const middleView = () => ({
 
 export const deliveryStatus = () => ({
   flexDirection: 'row',
-  paddingHorizontal: size.moderateScale(20),
+  paddingHorizontal: size.moderateScale(10),
   borderBottomColor: color.grayLight,
   borderBottomWidth: size.moderateScale(1),
   paddingVertical: size.moderateScale(20),
@@ -120,7 +119,7 @@ export const textSmall = () => ({
 export const totalEarningView = () => ({
   backgroundColor: color.mostlyWhite,
   paddingVertical: size.moderateScale(15),
-  paddingHorizontal: size.moderateScale(20),
+  paddingHorizontal: size.moderateScale(10),
   flexDirection: 'row',
   alignItems: 'center',
   justifyContent: 'flex-start',
@@ -132,18 +131,17 @@ export const bottomView = () => ({
   width: '100%',
   gap: size.moderateScale(10),
   paddingHorizontal: size.moderateScale(10),
-  paddingVertical: size.moderateScale(20),
 })
 
 export const button = () => ({
   flex: 1,
-  paddingVertical: size.moderateScale(15),
+  paddingVertical: size.moderateScale(10),
   borderRadius: size.moderateScale(10)
 })
 
 export const buttonLG = () => ({
   flex: 1,
-  paddingVertical: size.moderateScale(15),
+  paddingVertical: size.moderateScale(10),
   borderRadius: size.moderateScale(10)
 })
 
@@ -155,6 +153,46 @@ export const buttonText = () => ({
 
 export const buttonTextLG = () => ({
   color: color.secondary,
+  fontSize: fontSize.small,
+  fontFamily: fonts.sarabunMedium,
+})
+
+export const proofOfPickupView = () => ({
+  height: size.moderateScale(300),
+  padding: size.moderateScale(10)
+})
+
+export const proofOfPickupImageView = () => ({
+  flex: 1,
+  borderRadius: size.moderateScale(10),
+  overflow: 'hidden',
+  backgroundColor: color.mostlyWhite,
+  padding: size.moderateScale(10)
+})
+
+export const proofOfPickupImage = () => ({
+  objectFit: 'contain',
+  height: '100%'
+})
+
+export const heading = () => ({
+  color: color.primary,
+  fontSize: fontSize.small,
+  fontFamily: fonts.sarabunMedium,
+})
+
+export const successBtn = () => ({
+  flex: 1,
+  paddingVertical: size.moderateScale(10),
+  borderRadius: size.moderateScale(10),
+  backgroundColor: color.success,
+  marginBottom: size.moderateScale(20),
+  alignItems: 'center',
+  justifyContent: 'center'
+})
+
+export const successBtnText = () => ({
+  color: color.primary,
   fontSize: fontSize.small,
   fontFamily: fonts.sarabunMedium,
 })

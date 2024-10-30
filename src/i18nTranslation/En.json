@@ -150,7 +150,7 @@
     "screen_title": "Scan Barcode",
     "button_text_1": "Picked",
     "button_text_2": "Re-Scan",
-    "button_text_3": "Trouble Scanning?",
+    "button_text_3": "Picked",
     "dialog_title": "Pick Order",
     "dialog_message": "Are you sure you want to picked the order of "
   },

@@ -10,7 +10,6 @@ export const Loader = ({
 }) => {
   return (
     <View style={styles.mainView(backgroundColor)}>
-      <StatusBar backgroundColor={backgroundColor} translucent/>
       <LottieView
         source={lottieIcons.dottedLoader}
         autoPlay

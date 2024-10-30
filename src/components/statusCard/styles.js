@@ -7,19 +7,19 @@ export const mainView = (bgColor) => ({
   alignItems: 'center',
   justifyContent: 'center',
   backgroundColor: bgColor ?? color.white,
-  borderRadius: size.moderateScale(20),
+  borderRadius: size.moderateScale(10),
 })
 
 export const cardTitle = () => ({
   fontSize: fontSize.littleMedium,
-  fontFamily: fonts.sarabunRegular,
+  fontFamily: fonts.sarabunBold,
   color: color.white,
   lineHeight: fontSize.littleMedium
 })
 
 export const cardBody = () => ({
-  fontSize: fontSize.small,
-  fontFamily: fonts.sarabunRegular,
+  fontSize: fontSize.verySmall,
+  fontFamily: fonts.sarabunMedium,
   color: color.white,
   lineHeight: fontSize.littleMedium
 })

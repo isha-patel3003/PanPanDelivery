@@ -27,7 +27,7 @@ export const titleView = () => ({
 })
 
 export const title = () => ({
-  fontSize: fontSize.middleMedium,
+  fontSize: fontSize.littleMedium,
   fontFamily: fonts.sarabunSemiBold,
   color: color.black,
 })

@@ -1,32 +1,36 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { View, Text } from 'react-native'
+import { View, Text, Image, RefreshControl } from 'react-native'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
 
 import { color, IcBackArrow, IcHome, IcParcelBox, IcPerson, IcRoute, size } from '../../theme'
-import { LocalizationContext } from '../../context'
-import { loadShipmentDetailsFromBarcode } from '../../services'
-import { Header, Screen, Button, DialogBox } from '../../components'
+import { LocalizationContext, useMainContext } from '../../context'
+import { loadShipmentDetailsFromBarcode, setShipmentStatusAsDropped } from '../../services'
+import { Header, Screen, Button } from '../../components'
 import * as styles from './styles'
 
 export const ShipmentDetailsScreen = () => {
 
   const navigation = useNavigation();
   const route = useRoute();
-  console.log("route: ", route?.params)
+  console.log("route in shupmentDetailsScreen: ", route?.params)
   const { userKey } = useSelector(state => state.auth.userDetails)
   const { t } = useContext(LocalizationContext);
+  const { deliveryTrackingKey, shipmentQRString, setShipmentQRString } = useMainContext();
+  console.log("deliveryTrackingKey::::::::",deliveryTrackingKey)
 
   const [loading, setLoading] = useState(false);
-  const [shipmentDetails, setShipmentDetails] = useState({})
+  const [shipmentDetails, setShipmentDetails] = useState({});
+  const [refreshing, setRefreshing] = useState(false);
 
-  const fetchStatusCardDetails = async (statusCard, userKey) => {
+  const fetchStatusCardDetails = async (trackingKey, userKey) => {
     setLoading(true);
     try {
-      const response = await loadShipmentDetailsFromBarcode(statusCard, userKey);
+      const response = await loadShipmentDetailsFromBarcode(trackingKey, userKey);
       if (response.status === 1) {
         console.log('response in shipment: ', response);
         setShipmentDetails(response);
+        setShipmentQRString(response?.driverAllocatedShipment?.shipmentQrStr);
       } else {
         console.log('response in shipment when status -1: ', response);
       }
@@ -46,24 +50,44 @@ export const ShipmentDetailsScreen = () => {
     return `${day}-${month}-${year}`;
   };
 
-  const handleShipmentBtnPress = () => {
-    navigation.navigate('pickupProofScreen')
-  }
-
-  useEffect(() => {
-    if (route?.params?.trackingKey) {
-      fetchStatusCardDetails(route.params.trackingKey, userKey);
-    }
-  }, [route, userKey]);
-
   const shipment = shipmentDetails?.driverAllocatedShipment?.shipment || {};
   const shippingDetails = shipment?.shippingDetails || {};
 
   const btnTextForShipment = shipmentDetails?.driverAllocatedShipment;
-  const shipmentBtnText = btnTextForShipment?.canMarkForPickup
-    ? btnTextForShipment?.btnTextMarkForPickup : btnTextForShipment?.canMarkForOutForDelivery
-      ? btnTextForShipment?.btnTextMarkForOutForDelivery : btnTextForShipment?.canMarkForDrop
-      ? btnTextForShipment?.btnTextMarkForDrop : 'N/A';
+  const shipmentBtnText = btnTextForShipment
+    ? btnTextForShipment.canMarkForPickup
+      ? btnTextForShipment.btnTextMarkForPickup
+      : btnTextForShipment.canMarkForOutForDelivery
+        ? btnTextForShipment.btnTextMarkForOutForDelivery
+        : btnTextForShipment.canMarkForDrop
+          ? btnTextForShipment.btnTextMarkForDrop
+          : btnTextForShipment.canMarkForDelivered
+            ? btnTextForShipment.btnTextMarkForDelivered
+            : 'N/A'
+    : 'N/A';
+
+  const handleShipmentBtnPress = async () => {
+    navigation.navigate(
+      'qrCodeScannerScreen',
+      {
+        recepientAddress: shippingDetails?.customerAddressStr,
+        recepientName: shippingDetails?.customerName,
+        shipmentBtnText
+      }
+    );
+  }
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchStatusCardDetails(deliveryTrackingKey, userKey);
+    setRefreshing(false);
+  };
+
+  useEffect(() => {
+    if (deliveryTrackingKey) {
+      fetchStatusCardDetails(deliveryTrackingKey, userKey);
+    }
+  }, [route, userKey]);
 
   return (
     <View style={styles.mainView()}>
@@ -75,15 +99,28 @@ export const ShipmentDetailsScreen = () => {
         headerStyle={styles.header()}
         headerTitleStyle={styles.headerTitle()}
       />
-      <Screen loading={loading} loadingBgColor={color.white} withScroll scrollStyle={styles.screen()}>
+      <Screen
+        withScroll
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[color.primary, color.secondary, color.tertiaryTextColor]}
+            tintColor={color.primary}
+          />
+        }
+        loading={loading}
+        loadingBgColor={color.white}
+        scrollStyle={styles.screen()}
+      >
         <View style={styles.topView()}>
-          <Text style={styles.trackingId()}>{shipment?.shipmentTrackingKey || 'No Tracking Key'}</Text>
+          <Text style={styles.trackingId()}>{deliveryTrackingKey}</Text>
           <View style={styles.addressWrapper()}>
             <View style={styles.row()}>
               <IcRoute fill={color.secondary} width={size.moderateScale(30)} height={size.moderateScale(30)} />
               <View style={styles.details()}>
                 <Text style={styles.addressTitle()}>{t("shipment_screen.address_title")}</Text>
-                <Text style={styles.addressBody()}>6634 Lake Otis Pkwy, Anchorage, Alaska, 99507</Text>
+                <Text style={styles.addressBody()}> </Text>
               </View>
             </View>
             <View style={styles.row()}>
@@ -137,23 +174,42 @@ export const ShipmentDetailsScreen = () => {
             <Text style={styles.textCapital()}>{t("shipment_screen.total_est_earnings")}</Text>
             <Text style={styles.textCapitalBold()}>฿ 87</Text>
           </View>
+          {
+            shipment?.proofOfPickupImageUrl && (
+              <View style={styles.proofOfPickupView()}>
+                <Text style={styles.heading()}>Proof of Pickup</Text>
+                <View style={styles.proofOfPickupImageView()}>
+                  <Image source={{ uri: shipment?.proofOfPickupImageUrl }} style={styles.proofOfPickupImage()} />
+                </View>
+              </View>
+            )
+          }
         </View>
         <View style={styles.bottomView()}>
-          <Button
-            title={t("shipment_screen.button_text_1")}
-            btnStyle={styles.button()}
-            btnTextStyle={styles.buttonText()}
-          />
-          <Button
-            onPress={handleShipmentBtnPress}
-            linearGradientButton
-            title={shipmentBtnText}
-            btnStyle={styles.buttonLG()}
-            btnTextStyle={styles.buttonTextLG()}
-          />
+          {
+            shipment?.shipmentStatusCode == 'PND' ? (
+              <View style={styles.successBtn()}>
+                <Text style={styles.successBtnText()}>DROPPED</Text>
+              </View>
+            ) : (
+              <>
+                <Button
+                  title={t("shipment_screen.button_text_1")}
+                  btnStyle={styles.button()}
+                  btnTextStyle={styles.buttonText()}
+                />
+                <Button
+                  onPress={handleShipmentBtnPress}
+                  linearGradientButton
+                  title={shipmentBtnText}
+                  btnStyle={styles.buttonLG()}
+                  btnTextStyle={styles.buttonTextLG()}
+                />
+              </>
+            )
+          }
         </View>
-      </Screen>
-
-    </View>
+      </Screen >
+    </View >
   )
 }

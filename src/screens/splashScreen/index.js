@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Image, Animated, Easing } from 'react-native';
+import { View, Animated, Easing } from 'react-native';
 
 import { Screen } from '../../components';
 import { color, images } from '../../theme';

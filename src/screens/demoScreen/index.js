@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { View, Text, StyleSheet, PanResponder, Animated } from 'react-native';
 import { color, fonts, fontSize, IcMotorBike, size } from '../../theme';
+import { Loader } from '../../components';
 
 export const DemoScreen = () => {
   const pan = useRef(new Animated.Value(0)).current; // Animated value for the button position

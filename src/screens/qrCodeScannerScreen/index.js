@@ -1,20 +1,23 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
+import Toast from 'react-native-toast-message';
 import { Image, PermissionsAndroid, Platform, Text, TouchableOpacity, View } from "react-native";
 import { Camera, useCameraDevice, useCodeScanner } from 'react-native-vision-camera';
-import { useNavigation } from '@react-navigation/native';
-import { LocalizationContext } from '../../context';
-import { color, IcBackArrow, IcScanner, size } from '../../theme';
-import { DialogBox, Header, Screen } from '../../components';
-import * as styles from './styles';
-import { loadShipmentDetailsFromBarcode } from '../../services';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
-import Toast from 'react-native-toast-message';
+
+import { LocalizationContext, useMainContext } from '../../context';
+import { color, IcBackArrow, IcScanner, size } from '../../theme';
+import {  Header, Screen } from '../../components';
+import { loadShipmentDetailsFromBarcode, setShipmentStatusAsDropped } from '../../services';
+import * as styles from './styles';
 
 export const QRCodeScannerScreen = () => {
 
   const navigation = useNavigation();
-  const { t } = useContext(LocalizationContext);
+  const route = useRoute();
   const { userDetails } = useSelector(state => state.auth);
+  const { t } = useContext(LocalizationContext);
+  const { deliveryStatusCode, deliveryTrackingKey, shipmentQRString } = useMainContext();
 
   const device = useCameraDevice('back');
   const cameraRef = useRef(null);
@@ -22,7 +25,6 @@ export const QRCodeScannerScreen = () => {
   const [loading, setLoading] = useState(false);
   const [cameraPermission, setCameraPermission] = useState(null);
   const [isCameraVisible, setIsCameraVisible] = useState(false);
-  const [showDialog, setShowDialog] = useState(false);
   const [scannedData, setScannedData] = useState(null);
   const [capturedImage, setCapturedImage] = useState(null);
 
@@ -64,11 +66,17 @@ export const QRCodeScannerScreen = () => {
     }
   };
 
+  const checkCameraPermission = async () => {
+    const status = await Camera.getCameraPermissionStatus();
+    setCameraPermission(status === 'granted');
+    setIsCameraVisible(status === 'granted');
+  };
+
   const fetchShipmentDetailsFromBarcode = async (barcode, userKey) => {
     setLoading(true);
     try {
       const response = await loadShipmentDetailsFromBarcode(barcode, userKey);
-      console.log(`response for ${barcode}: `, response);
+      // console.log(`response for ${barcode}: `, response);
       if (response.status == 1) {
         Toast.show({
           type: 'success',
@@ -76,7 +84,18 @@ export const QRCodeScannerScreen = () => {
           position: 'bottom',
           bottomOffset: 50
         })
-        navigation.navigate('shipmentDetailsScreen', { trackingKey: barcode, userKey });
+        if(response?.driverAllocatedShipment?.canMarkForDrop) {
+          navigation.navigate('shipmentDetailsScreen');
+        } else {
+          const shipmentDimensions = {
+            length: response?.driverAllocatedShipment?.shipment?.sizeLength,
+            width: response?.driverAllocatedShipment?.shipment?.sizeWidth,
+            height: response?.driverAllocatedShipment?.shipment?.sizeHeight,
+            weight: response?.driverAllocatedShipment?.shipment?.weight
+          }
+          navigation.navigate('pickupProofScreen', { trackingKey: deliveryTrackingKey, userKey, shipmentQrStr: shipmentQRString,  shipmentDimensions});
+
+        }
       } else {
         Toast.show({
           type: 'error',
@@ -91,6 +110,27 @@ export const QRCodeScannerScreen = () => {
       setLoading(false);
     }
   };
+
+  const postShipmentStatusAsDropped = async (userKey, shipmentQrStr) => {
+    setLoading(true)
+    try {
+      const response = await setShipmentStatusAsDropped(userKey, shipmentQrStr);
+      console.log("response for postShipmentStatusAsDropped:::: ", response);
+      if(response.status == 1) {
+        navigation.navigate('shipmentDetailsScreen')
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: `${response.message}`,
+          position: 'bottom'
+        })
+      }
+    } catch (error) {
+      console.log("error in postShipmentStatusAsDropped:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleReScan = () => {
     setScannedData(null);
@@ -116,16 +156,11 @@ export const QRCodeScannerScreen = () => {
     codeTypes: ['qr', 'ean-13', 'code-128'],
     onCodeScanned: async (codes) => {
       codes.map(async (code) => {
-        console.log("code::::::: ", code.value);
         setScannedData(code.value);
         if (code.value) {
           const capturedImage = await takePhoto();
-          console.log("image:  ", capturedImage);
           if (capturedImage) {
             setCapturedImage(capturedImage);
-            setLoading(true);
-            await fetchShipmentDetailsFromBarcode(code.value, userDetails.userKey);
-            setLoading(false);
           }
         }
         setIsCameraVisible(false);
@@ -133,11 +168,14 @@ export const QRCodeScannerScreen = () => {
     }
   });
 
-  const checkCameraPermission = async () => {
-    const status = await Camera.getCameraPermissionStatus();
-    setCameraPermission(status === 'granted');
-    setIsCameraVisible(status === 'granted');
-  };
+  const handleShipmentBtnClick = async (deliveryStatusCode) => {
+    console.log("deliveryStatusCode: ",deliveryStatusCode)
+    if(deliveryStatusCode == 'PCKD') {
+      await postShipmentStatusAsDropped(userDetails?.userKey, shipmentQRString)
+    } else {
+      await fetchShipmentDetailsFromBarcode(scannedData, userDetails.userKey);
+    }
+  }
 
   useEffect(() => {
     checkCameraPermission();
@@ -156,30 +194,34 @@ export const QRCodeScannerScreen = () => {
         />
         <View style={styles.middleView()}>
           <View style={styles.riderDetails()}>
-            <Text style={styles.riderName()}>Jeet Kumar Hadial</Text>
-            <Text style={styles.riderAddress()}>6634 Lake Otis Pkwy, Anchorage, Alaska, 99507</Text>
+            <Text style={styles.riderName()}>{route?.params?.recepientName}</Text>
+            <Text style={styles.riderAddress()}>{route?.params?.recepientAddress}</Text>
           </View>
           <View style={styles.scannerButtonWrapper(isCameraVisible)}>
             {
-              capturedImage ? (
-                <Image
-                  source={{ uri: `file://${capturedImage}` }}
-                  style={{ flex: 1, width: '100%', height: size.moderateScale(200) }}
-                />
-              ) : isCameraVisible && device !== null && cameraPermission ? (
-                <Camera
-                  ref={cameraRef}
-                  photo={true}
-                  style={{ flex: 1, width: '100%' }}
-                  device={device}
-                  isActive={isCameraVisible}
-                  codeScanner={codeScanner}
-                />
-              ) : (
-                <TouchableOpacity onPress={requestCameraPermission} activeOpacity={0.7} style={styles.scannerButton()}>
-                  <IcScanner fill={color.secondary} width={size.moderateScale(40)} height={size.moderateScale(40)} />
-                </TouchableOpacity>
-              )
+              capturedImage
+                ? (
+                  <Image
+                    source={{ uri: `file://${capturedImage}` }}
+                    style={{ flex: 1, width: '100%', height: '100%' }}
+                  />
+                )
+                : isCameraVisible && device !== null && cameraPermission
+                  ? (
+                    <Camera
+                      ref={cameraRef}
+                      photo={true}
+                      style={{ flex: 1, width: '100%' }}
+                      device={device}
+                      isActive={isCameraVisible}
+                      codeScanner={codeScanner}
+                    />
+                  )
+                  : (
+                    <TouchableOpacity onPress={requestCameraPermission} activeOpacity={0.7} style={styles.scannerButton()}>
+                      <IcScanner fill={color.secondary} width={size.moderateScale(40)} height={size.moderateScale(40)} />
+                    </TouchableOpacity>
+                  )
             }
           </View>
         </View>
@@ -190,8 +232,8 @@ export const QRCodeScannerScreen = () => {
                 <TouchableOpacity style={styles.linkButton()} onPress={handleReScan}>
                   <Text style={styles.linkText()}>{t("qrCode_scanner_screen.button_text_2")}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.linkButton()}>
-                  <Text style={styles.linkText()}>{t("qrCode_scanner_screen.button_text_3")}</Text>
+                <TouchableOpacity style={styles.linkButton()} onPress={() => handleShipmentBtnClick(deliveryStatusCode)}>
+                  <Text style={styles.linkText()}>{route?.params?.shipmentBtnText}</Text>
                 </TouchableOpacity>
               </View>
             </View>

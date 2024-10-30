@@ -8,24 +8,14 @@ export const StatusCard = ({
   title,
   bodyText,
   onPress,
-  loading,
 }) => {
   return (
     <TouchableOpacity
       activeOpacity={0.7}
       onPress={onPress}
       style={styles.mainView(bgColor)}>
-      {
-        loading
-          ? <ActivityIndicator size="large" color="#fff" />
-          : (
-            <>
-              <Text style={styles.cardTitle()}>{title}</Text>
-              <Text style={styles.cardBody()}>{bodyText}</Text>
-            </>
-          )
-      }
-
+      <Text style={styles.cardTitle()}>{title}</Text>
+      <Text style={styles.cardBody()}>{bodyText}</Text>
     </TouchableOpacity>
   )
 }

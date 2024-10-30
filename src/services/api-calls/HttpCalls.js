@@ -4,7 +4,7 @@ import axios from 'axios';
 import { BASE_URL } from '../../config';
 // import { store, userLogout } from '../../redux';
 
-const showLog = true;
+const showLog = false;
 
 function _post(url, headers, data) {
   const options = {
@@ -26,9 +26,6 @@ function _post(url, headers, data) {
     })
     .catch(async err => {
       showLog && console.log('POST API ERROR ==>', err);
-      // if (err.response.data.message == 'Invalid token') {
-      //   await store.dispatch(userLogout());
-      // }
       throw 'response' in err ? err.response.data : err;
     });
 }

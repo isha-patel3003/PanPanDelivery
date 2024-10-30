@@ -1,19 +1,25 @@
-import React, { useRef, useState } from 'react'
-import { View, Text, TextInput, Image } from 'react-native'
-
-import * as styles from './styles'
-import { useNavigation } from '@react-navigation/native'
+import React, { useEffect, useRef, useState } from 'react'
+import { View, Text, TextInput, Image, ActivityIndicator } from 'react-native'
+import Toast from 'react-native-toast-message'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
-import { Button, Header, Screen } from '../../components'
-import { color, IcBackArrow, size } from '../../theme'
 import { Camera, useCameraDevice } from 'react-native-vision-camera'
-import { getImageType } from '../../utils'
+
+import { useMainContext } from '../../context'
+import { color, IcBackArrow, size } from '../../theme'
 import { setShipmentStatusAsPicked } from '../../services'
+import { getImageType } from '../../utils'
+import { Button, Header, Screen } from '../../components'
+import * as styles from './styles'
 
 export const PickupProofScreen = () => {
 
   const navigation = useNavigation();
+  const route = useRoute();
+  console.log("route::::::::::::::::::::::::::::::::: ", route?.params)
   const { userDetails } = useSelector(state => state.auth);
+  const { deliveryStatusCode, setDeliveryStatusCode } = useMainContext();
+  console.log("deliveryyyy::::::::",deliveryStatusCode)
 
   const cameraRef = useRef()
   const device = useCameraDevice('back');
@@ -22,10 +28,10 @@ export const PickupProofScreen = () => {
   const [capturedImageType, setCapturedImageType] = useState(null);
   const [loading, setLoading] = useState(false);
   const [inputFieldValues, setInputFieldValues] = useState({
-    length: '10000.0',
-    width: '10000.0',
-    height: '1000.0',
-    weight: '599.0'
+    length: '',
+    width: '',
+    height: '',
+    weight: '',
   })
 
   const onValueChangeText = (field, value) => {
@@ -53,20 +59,29 @@ export const PickupProofScreen = () => {
 
   const setShipmentStatusDimension = async () => {
     const data = {
-      shipmentQrStr: "8539182565c47a2c976ef1d35922e8763ab7f6b362acf9ee",
-      pickupLatitude: "",
-      pickupLongitude: "",
-      sizeLength: "10000.0",
-      sizeWidth: "10000.0",
-      sizeHeight: "1000.0",
-      weight: "599.0",
+      shipmentQrStr: route?.params?.shipmentQrStr,
+      pickupLatitude: "12.666",
+      pickupLongitude: "15.666",
+      sizeLength: inputFieldValues?.length,
+      sizeWidth: inputFieldValues?.width,
+      sizeHeight: inputFieldValues?.height,
+      weight: inputFieldValues?.weight,
       url: capturedImage,
       imageType: capturedImageType
     }
     setLoading(true);
     try {
       const response = await setShipmentStatusAsPicked(userDetails.userKey, data)
-      console.log("response for shipmentState: ",response)
+      if (response.status === 1) {
+        navigation.navigate('shipmentDetailsScreen', { shipmentQrStr: route?.params?.shipmentQrStr, trackingKey: route?.params?.trackingKey })
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: response.message,
+          position: 'bottom',
+          bottomOffset: 10
+        })
+      }
     } catch (error) {
       console.log("Error in  setShipmentStatusDimension: ", error);
     } finally {
@@ -79,6 +94,15 @@ export const PickupProofScreen = () => {
     setCapturedImageType(null);
   }
 
+  useEffect(() => {
+    setInputFieldValues({
+      length: route?.params?.shipmentDimensions?.length,
+      width: route?.params?.shipmentDimensions?.width,
+      height: route?.params?.shipmentDimensions?.height,
+      weight: route?.params?.shipmentDimensions?.weight,
+    })
+  }, [route?.params?.shipmentDimensions])
+
   return (
     <Screen withScroll scrollStyle={{ flexGrow: 1 }}>
       <View style={styles.mainView()}>
@@ -87,24 +111,31 @@ export const PickupProofScreen = () => {
           headerStyle={styles.header()}
           headerTitleStyle={styles.headerText()}
           leftIcon
-          renderLeftIcon={() => (<IcBackArrow fill={color.secondary} width={size.moderateScale(30)} height={size.moderateScale(30)} />)}
+          renderLeftIcon={() => (<IcBackArrow fill={color.secondary} />)}
+          headerLeftIconPress={() => navigation.goBack()}
         />
         <View style={styles.middleView()}>
           <View style={styles.cameraView()}>
             {
-              capturedImage ? (
-                <Image
-                  source={{ uri: capturedImage }}
-                  style={styles.image()}
-                />
+              loading ? (
+                <View style={styles.indicator()}>
+                  <ActivityIndicator size='large' color={color.primary} />
+                </View>
               ) : (
-                <Camera
-                  ref={cameraRef}
-                  isActive
-                  photo={true}
-                  device={device}
-                  style={styles.camera()}
-                />
+                capturedImage ? (
+                  <Image
+                    source={{ uri: capturedImage }}
+                    style={styles.image()}
+                  />
+                ) : (
+                  <Camera
+                    ref={cameraRef}
+                    isActive
+                    photo={true}
+                    device={device}
+                    style={styles.camera()}
+                  />
+                )
               )
             }
           </View>
@@ -131,6 +162,7 @@ export const PickupProofScreen = () => {
                   value={inputFieldValues?.length}
                   onChangeText={(txt) => onValueChangeText('length', txt)}
                   keyboardType='numeric'
+                  editable={!loading}
                 />
               </View>
               <View style={styles.textInputView()}>
@@ -141,6 +173,7 @@ export const PickupProofScreen = () => {
                   value={inputFieldValues?.width}
                   onChangeText={(txt) => onValueChangeText('width', txt)}
                   keyboardType='numeric'
+                  editable={!loading}
                 />
               </View>
             </View>
@@ -153,6 +186,7 @@ export const PickupProofScreen = () => {
                   value={inputFieldValues?.height}
                   onChangeText={(txt) => onValueChangeText('height', txt)}
                   keyboardType='numeric'
+                  editable={!loading}
                 />
               </View>
               <View style={[styles.textInputView(), { marginBottom: size.moderateScale(20) }]}>
@@ -163,6 +197,7 @@ export const PickupProofScreen = () => {
                   value={inputFieldValues?.weight}
                   onChangeText={(txt) => onValueChangeText('weight', txt)}
                   keyboardType='numeric'
+                  editable={!loading}
                 />
               </View>
             </View>
@@ -173,13 +208,15 @@ export const PickupProofScreen = () => {
                     btnStyle={styles.button()}
                     btnTextStyle={styles.buttonText()}
                     onPress={handleReTakePhoto}
+                    disabled={loading}
                     title='Re Take' />
                   <Button
                     btnStyle={styles.button()}
                     btnTextStyle={styles.buttonText()}
                     title='Picked'
-                    onPress={setShipmentStatusDimension} 
-                    />
+                    disabled={loading}
+                    onPress={setShipmentStatusDimension}
+                  />
                 </View>
               )
             }

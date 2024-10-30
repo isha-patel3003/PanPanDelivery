@@ -62,7 +62,7 @@ export const ProfileScreen = () => {
       <View style={styles.mainView()}>
         <View style={styles.topView()}>
           <TouchableOpacity style={styles.iconView()}  onPress={() => navigation.goBack()}>
-            <IcBackArrow fill={color.secondary} width={size.moderateScale(30)} height={size.moderateScale(30)} />
+            <IcBackArrow fill={color.secondary} />
           </TouchableOpacity>
           <View style={styles.imageView()}>
             <Image source={images.appLogo} style={styles.image()} />
